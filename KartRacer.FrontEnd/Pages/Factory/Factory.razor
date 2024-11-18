@@ -1,0 +1,76 @@
+﻿@page "/factory/"
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using Newtonsoft.Json
+
+
+<PageTitle>KartRacer - Factory</PageTitle>
+
+<div class="row">
+    <div class="col-4">
+        <h3>Factory</h3>
+    </div>
+    <div class="col-8">
+        <CalendarSummary />
+    </div>
+</div>
+<br />
+ <div class="row">
+    <div class="col-6">
+        <ChassisCard dataset="chassis1"  />
+    </div>
+    <div class="col-6">
+        <ChassisCard dataset="chassis2" />
+    </div>
+</div> 
+ <div class="row">
+    <div class="col-6">
+        <DriverCard dataset="driveKartRacer" />
+    </div>
+    <div class="col-6">
+        <DriverCard dataset="driver2" />
+    </div>
+</div>
+<div class="row">
+    <PartsInventory dataset="PartList"/>
+</div>
+<div class="row">
+    <ResultsSummary />
+</div>
+<div class="row">
+    <CalendarDetail />
+</div>
+<div class="row">
+    <StaffSummary />
+</div> 
+<div class="row">
+    <TasksDetail dataset="PartList"/>
+</div>
+
+
+@code {
+    //Chassis
+    List<Chassis> ChassisList = new List<Chassis> { };
+    Chassis chassis1 = new Chassis { };
+    Chassis chassis2 = new Chassis { };
+    
+    //Parts
+    List<Part> PartList = new List<Part> { };
+    
+
+    private ResponseDto responseChassis = new ResponseDto { IsSuccess = true };
+    private ResponseDto responseDriver = new ResponseDto { IsSuccess = true };
+    private ResponseDto responseParts = new ResponseDto { IsSuccess = true };
+
+    protected override async Task OnInitializedAsync()
+    {
+        //responseChassis = await carService.GetCurrentChassisAsync();
+        if (responseChassis.IsSuccess)
+        {
+            ChassisList = JsonConvert.DeserializeObject<List<Chassis>>(Convert.ToString(responseChassis.Result));
+            chassis1 = ChassisList[0];
+            chassis2 = ChassisList[1];
+        }
+    }
+
+}

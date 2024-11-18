@@ -1,0 +1,32 @@
+﻿@using KartRacer.FrontEnd.Web.Models.Dto
+@inject NavigationManager navman
+<MudDataGrid T="ResultsDto" Items="@dataset" ReadOnly="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="r => r.Position" Title="Pos" />
+        <PropertyColumn Property="r => r.DriverName" Title="Name" />
+        <PropertyColumn Property="r => r.DifferenceToFirst" />
+        <PropertyColumn Property="r => r.FastestLap" />
+        <PropertyColumn Property="r => r.DifferenceToFastestLap" />
+        <PropertyColumn Property="r => r.Laps" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => GoToLaps(context.Item.DriverId)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Laps</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+
+@code {
+    [Parameter]
+    public List<ResultsDto> dataset { get; set; }
+
+
+
+    private Task GoToLaps(int driverid)
+    {
+        navman.NavigateTo("/session/laps/" + driverid.ToString());
+        return Task.CompletedTask;
+    }
+
+}

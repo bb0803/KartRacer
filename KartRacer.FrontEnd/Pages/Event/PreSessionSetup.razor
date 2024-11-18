@@ -1,0 +1,112 @@
+﻿@page "/session/pre"
+@inject NavigationManager navManager
+@inject ISetupService setupService
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Setup
+@using Newtonsoft.Json
+@using KartRacer.FrontEnd.Web.Models.Dto
+
+<PageTitle>KartRacer - Pre Session Setup</PageTitle>
+<div class="row">
+    <div class="col-6">
+        <h3>Session Setup - SESSION NAME</h3>
+    </div>
+    <div class="col-6 d-flex">
+        <button class="btn btn-primary" onclick="GoToSession()" >Save Settings and Go to session</button>
+    </div>
+</div>
+<br />
+@* @if (@message != "" && @message != null) {
+<div class="alert alert-danger">
+    <h4>@message</h4>
+</div>
+} *@
+@if (drivers != null)
+{
+    <div class="row">
+        <div class="col-6 mb-3">
+            <ChangeTyre Driver="drivers[0]" dataset="sessionStatus1" IsPitStop="false" OnTyreSelected="@TyreSelected" />
+        </div>
+        <div class="col-6 mb-3">
+            <ChangeTyre Driver="drivers[1]" dataset="sessionStatus2" IsPitStop="false" OnTyreSelected="@TyreSelected" />
+        </div>
+        <div class="col-6 mb-1">
+            <ChangeDriverSettings DriverId="drivers[0].Id" dataset="driveKartRacerSettings" readonlyDataset="driveKartRacerSettingsReadOnly" OnSettingsUpdated="@SettingsUpdated" IsPitStop="false" />
+        </div>
+        <div class="col-6 mb-1">
+            <ChangeDriverSettings DriverId="drivers[1].Id" dataset="driver2Settings" readonlyDataset="driver2SettingsReadOnly" OnSettingsUpdated="@SettingsUpdated" IsPitStop="false" />
+        </div>
+    </div>
+}
+<br />
+@code {
+    public SessionStatus sessionStatus1;
+    public SessionStatus sessionStatus2;
+    public DriverSettingsDto driveKartRacerSettings;
+    public DriverSettingsDto driveKartRacerSettingsReadOnly;
+    public DriverSettingsDto driver2Settings;
+    public DriverSettingsDto driver2SettingsReadOnly;
+    public DriverSettingsDto newDriverSettings;
+    public List<DriverWithSettingsDto> drivers;
+    public int newTyre;
+
+
+
+    private ResponseDto responseDrivers = new ResponseDto { IsSuccess = true };
+
+    string message = string.Empty;
+    protected async override Task OnInitializedAsync()
+    {
+        
+        // var responseSessionStatus1 = await sessionService.GetSessionStatusAsync(drivers[0].Id);
+        // if (responseSessionStatus1.IsSuccess)
+        // {
+        //     sessionStatus1 = JsonConvert.DeserializeObject<SessionStatus>(Convert.ToString(responseSessionStatus1.Result));
+        //     message = "";
+        // }
+        // var responseSessionStatus2 = await sessionService.GetSessionStatusAsync(drivers[1].Id);
+        // if (responseSessionStatus2.IsSuccess)
+        // {
+        //     sessionStatus2 = JsonConvert.DeserializeObject<SessionStatus>(Convert.ToString(responseSessionStatus2.Result));
+        //     message = "";
+        // }
+        // var responseDriveKartRacerSettings = await sessionService.GetDriverSettingsAsync(drivers[0].Id, true);
+        // if (responseDriveKartRacerSettings.IsSuccess)
+        // {
+        //     driveKartRacerSettings = JsonConvert.DeserializeObject<DriverSettingsDto>(Convert.ToString(responseDriveKartRacerSettings.Result));
+        //     driveKartRacerSettingsReadOnly = JsonConvert.DeserializeObject<DriverSettingsDto>(Convert.ToString(responseDriveKartRacerSettings.Result));
+
+        // }
+
+        // var responseDriver2Settings = await sessionService.GetDriverSettingsAsync(drivers[1].Id, true);
+        // if (responseDriver2Settings.IsSuccess)
+        // {
+        //     driver2Settings = JsonConvert.DeserializeObject<DriverSettingsDto>(Convert.ToString(responseDriver2Settings.Result));
+        //     driver2SettingsReadOnly = JsonConvert.DeserializeObject<DriverSettingsDto>(Convert.ToString(responseDriver2Settings.Result));
+        // }
+
+        message = responseDrivers.Message;
+    }
+
+
+    private void GoToSession()
+    {
+        navManager.NavigateTo("/session/");
+    }
+
+    public void SettingsUpdated(DriverSettingsDto drv)
+    {
+        newDriverSettings = drv;
+    }
+
+    public async void TyreSelected(ChangeTyreDto tyre)
+    {
+        if (tyre.TyreId > 0)
+        {
+            //await sessionService.ChangeTyreAsync(tyre);
+        }
+    }
+
+    
+}

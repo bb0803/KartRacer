@@ -1,0 +1,38 @@
+﻿@using KartRacer.FrontEnd.Models.Dto
+@inject NavigationManager navman
+@inject IJSRuntime js
+<MudText Typo="Typo.body1" Color="Color.Primary" ></MudText>
+<MudDataGrid T="SessionHistoryDto" Items="@dataset" ReadOnly="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="sh => sh.SessionName" Title="Name" />
+        <PropertyColumn Property="sh => sh.SessionStartDate" Title="Start Date" />
+        <PropertyColumn Property="sh => sh.BestLapTime" Title="Best Lap" />
+        <PropertyColumn Property="sh => sh.Position" Title="Pos" />
+        <TemplateColumn>
+            <CellTemplate>
+                <MudTooltip Text="@context.Item.Setup" Color="Color.Primary" Placement="Placement.Top">
+                    <MudText Typo="Typo.body1">@context.Item.SetupShort</MudText>
+                </MudTooltip>
+            </CellTemplate>
+        </TemplateColumn>
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudIconButton Icon="@Icons.Material.Filled.OpenInNew" @onclick="() => GoToSession(context.Item.SessionId)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary"></MudIconButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+
+@code {
+    [Parameter]
+    public List<SessionHistoryDto> dataset { get; set; }
+
+    private async Task GoToSession(int sessionId)
+    {
+        await js.InvokeVoidAsync("open", $"results/{sessionId}", "_blank");
+        //navman.NavigateTo($"/results/{sessionId}");
+        return;
+    }
+
+}

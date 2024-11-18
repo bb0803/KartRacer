@@ -1,0 +1,90 @@
+﻿@page "/session/laps/{driverId:int}"
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using Newtonsoft.Json
+
+<PageTitle>KartRacer - @title</PageTitle>
+<h3>@title</h3>
+
+
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(1 == null && session == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+        
+    <button class="btn btn-secondary" @onclick="@(() => BackToSession())"> <span class="oi oi-plus" aria-hidden="true"></span> Back To Session </button>
+    <br />
+    
+    @if (1 != null)
+    {
+        <SessionDriverResultsTable dataset="results" />
+        <br />
+    }
+}
+
+
+@code {
+    [Parameter]
+    public int driverId { get; set; }
+
+    public Session session;
+    private string title;
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSession();
+        await LoadDriverHeader();
+        await LoadDriverLapTimes();        
+    }
+
+    private async Task LoadDriverLapTimes()
+    {
+        //response = await resultService.GetSessionDriverResultsAsync(driverId);
+        if (response.IsSuccess)
+        {
+            //results = JsonConvert.DeserializeObject<List<SessionDriverResultDto>>(Convert.ToString(response.Result));
+        }
+    }
+
+    private async Task LoadDriverHeader()
+    {
+        //response = await resultService.GetSessionDriverResultsHeaderAsync(driverId);
+        if (response.IsSuccess)
+        {
+            //header = JsonConvert.DeserializeObject<SessionDriverResultsHeaderDto>(Convert.ToString(response.Result));
+        }
+    }
+
+    private async Task LoadSession()
+    {
+        //Session Details
+        //response = await sessionService.GetSessionDetailsAsync();
+        if (response.IsSuccess)
+        {
+            session = JsonConvert.DeserializeObject<Session>(Convert.ToString(response.Result));
+        }
+
+    }
+
+    private void BackToSession()
+    {
+        navman.NavigateTo("/session");
+    }
+
+
+}

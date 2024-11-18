@@ -1,0 +1,174 @@
+﻿@page "/Events/Upcoming"
+
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Models.Dto
+@using KartRacer.FrontEnd.Services.Driver
+@using KartRacer.FrontEnd.Services.Event
+@using KartRacer.FrontEnd.Services.User
+@using Newtonsoft.Json
+@inject NavigationManager navman
+@inject IUserService userService
+@inject IDriverService driverService
+@inject IEventService eventService
+@inject ISnackbar snackbar
+@inject IDialogService dialog
+
+
+
+
+<MudDataGrid MultiSelection="true" Items="@entrySessions" Filterable="false" Dense="true"
+             Hideable="true" Groupable="true" GroupExpanded="true" GroupClassFunc="GroupClassFunc">
+    <ToolBarContent>
+        <MudText Typo="Typo.h6">Upcoming Sessions</MudText>
+        <MudSpacer />
+    </ToolBarContent>
+    <Columns>
+        <PropertyColumn Property="x => x.EventInfo" Title="Info" Hidden="true" Grouping GroupBy="@_groupBy">
+            <GroupTemplate>
+                @if (_customizeGroupTemplate)
+                {
+                    <span style="font-weight:bold">Event: @context.Grouping.Key <MudChip Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small">Total remaining: @context.Grouping.Count()</MudChip></span>
+                }
+                else
+                {
+                    <span style="font-weight:bold">Event: @context.Grouping.Key</span>
+                }
+            </GroupTemplate>
+        </PropertyColumn>
+        <PropertyColumn Property="x => x.SessionName" Title="Session" />
+        <PropertyColumn Property="x => x.SessionCountdown" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => GoToSetup(context.Item.EventSessionId)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Setup</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@upcomingMessage</MudText>
+
+
+
+<br />
+@code {
+    UserSetting usr = new UserSetting();
+    private string upcomingMessage = String.Empty;
+    List<EntriesDto> entries = new List<EntriesDto>();
+    List<EntrySessionsDto> entrySessions = new List<EntrySessionsDto>();
+    Boolean _customizeGroupTemplate = true;
+    private string GroupClassFunc(GroupDefinition<EntrySessionsDto> item)
+    {
+        return item.Grouping.Key?.ToString() == "Nonmetal" || item.Grouping.Key?.ToString() == "Other"
+                ? "mud-theme-warning"
+                : string.Empty;
+    }
+
+    Func<EntrySessionsDto, object> _groupBy = x => 
+    {
+        //if (_customizeGroupBy)
+        //     return entries.Contains(x.EventInfo) ? "Nonmetal":  "Metal";
+         return x.EventInfo;
+
+    };
+
+    protected override async void OnInitialized()
+    {
+        //No Driver Set
+        var responseUser = await userService.GetUserSettingAsync();
+        if (responseUser.IsSuccess)
+        {
+            usr = JsonConvert.DeserializeObject<UserSetting>(Convert.ToString(responseUser.Result));
+            if (String.IsNullOrEmpty(usr.DriverId.ToString()))
+            {
+                navman.NavigateTo("createDriver");
+            }
+        }
+        var responseDriver = await driverService.GetDriverAsync();
+        if (!responseDriver.IsSuccess) { snackbar.Add("An error occurred.", Severity.Error); }
+
+        Driver drv = JsonConvert.DeserializeObject<Driver>(Convert.ToString(responseDriver.Result));
+        //No Kart Set
+        if (String.IsNullOrEmpty(drv.CurrentKartId.ToString()))
+        {
+            navman.NavigateTo("kartshop/karts");
+        }
+
+        //No Engine Set
+        if (String.IsNullOrEmpty(drv.CurrentEngineId.ToString()))
+        {
+            snackbar.Add("You do not have any engines. You need to purchase one before you can enter an event.", Severity.Info);
+            navman.NavigateTo("kartshop/engines");
+        }
+
+        //Entries
+        await loadUpcomingSessions();
+        await loadUpcomingEventSessions();
+        //Available Events
+        StateHasChanged();
+    }
+    private async void setupSession(int Id)
+    {
+        var response = await eventService.CreateEntryAsync(Id);
+        if (response.IsSuccess)
+        {
+            snackbar.Add("Your entry was successfuly created.", Severity.Info);
+        }
+        else
+        {
+            snackbar.Add("The entry was not successful, please try again.", Severity.Error);
+        }
+        await loadUpcomingSessions();
+    }
+
+    private async Task loadUpcomingSessions()
+    {
+        var responseEntries = await eventService.GetEntriesAsync();
+        if (responseEntries.IsSuccess)
+        {
+            entries = JsonConvert.DeserializeObject<List<EntriesDto>>(Convert.ToString(responseEntries.Result));
+        }
+        if (entries.Count == 0)
+        {
+
+            upcomingMessage = "You currently have no upcoming entries.";
+        }
+        else
+        {
+            upcomingMessage = "";
+        }
+        StateHasChanged();
+
+    }
+
+    private async Task loadUpcomingEventSessions()
+    {
+        var response = await eventService.GetEntrySessionsAsync();
+        if (response.IsSuccess)
+        {
+            entrySessions = JsonConvert.DeserializeObject<List<EntrySessionsDto>>(Convert.ToString(response.Result));
+        }
+        if (entries.Count == 0)
+        {
+            upcomingMessage = "You currently have no upcoming entries.";
+        }
+        else
+        {
+            upcomingMessage = "";
+        }
+        StateHasChanged();
+
+    }
+
+    private Task GoToSetup(int eventSessionId)
+    {
+        var parameters = new DialogParameters<Dialog>
+        {
+            { x => x.DialogContent, "<SetupForm setup=\"setup[0]\" ShowSaveButton=\"true\" ShowSetAsFavouriteButton=\"true\" />" },
+            { x => x.DialogTitle, "Setup" }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true, };
+
+        return dialog.ShowAsync<Dialog>("Simple Dialog", parameters, options);
+    }
+}

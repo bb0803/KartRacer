@@ -1,0 +1,61 @@
+﻿@page "/results/{id:int}"
+@inject IResultService resultService
+@inject IJSRuntime js
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Results
+@using KartRacer.FrontEnd.Web.Models.Dto
+@using Newtonsoft.Json
+
+<PageTitle>KartRacer - Results</PageTitle>
+<h3>Results</h3>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(results == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+        <br/>
+        <ResultTable dataset="results" />
+    }
+}
+
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    public List<ResultsDto> results;
+    public int TotalSize { get; set; }
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+    protected Virtualize<SessionLapTime> ChildComponent;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        response = await resultService.GetSessionResultsAsync(id);
+        if (response.IsSuccess)
+        {
+            results = JsonConvert.DeserializeObject<List<ResultsDto>>(Convert.ToString(response.Result));
+        }
+    }
+
+    private async Task LoadSessionLapTimes()
+    {
+        //var virtualizeResult = await resultService.GetSessionLapTimesAsync();
+        //results = JsonConvert.DeserializeObject<List<SessionLapTime>>(Convert.ToString(virtualizeResult.Result));
+        //TotalSize = virtualizeResult.TotalSize;
+    }
+}

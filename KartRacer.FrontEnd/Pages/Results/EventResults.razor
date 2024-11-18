@@ -1,0 +1,74 @@
+﻿@page "/eventResults/"
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Models.Dto
+@using KartRacer.FrontEnd.Services.Event
+@using KartRacer.FrontEnd.Services.Results
+@using KartRacer.FrontEnd.Web.Models.Dto
+@using Newtonsoft.Json
+@using System.Linq
+@inject IResultService resultService
+@inject IEventService eventService
+@inject IJSRuntime js
+
+<PageTitle>KartRacer - Results</PageTitle>
+<h3>Results</h3>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(eventResults == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    else
+    {
+        <br/>
+        <EventResultTable dataset="eventResults" />
+    }
+}
+
+
+@code {
+    public List<SessionHistoryDto> eventResults = new List<SessionHistoryDto>() { };
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+
+    public class Ev {
+        public string EventName { get; set; } = String.Empty;
+        public DateOnly EventDate { get; set; }
+        public string CircuitName { get; set; } = String.Empty;
+        public int Count { get; set; }
+    }
+
+    //public List<Ev> events = new List<Ev>() { };
+    protected override async Task OnInitializedAsync()
+    {
+        response = await eventService.GetRecentEventSessionsForDriver();
+        if (response.IsSuccess)
+        {
+            eventResults = JsonConvert.DeserializeObject<List<SessionHistoryDto>>(Convert.ToString(response.Result));
+        }
+        var events = eventResults.GroupBy(er => new { er.EventName, er.EventStartDate, er.CircuitName, })
+                            .Select(grp => new { grp.Key, Count = grp.Count(), })
+                            .ToList();
+        // foreach (Ev event in events) {
+        //     string a = "a";
+        // }
+
+    }
+
+    private async Task LoadSessionLapTimes()
+    {
+        //var virtualizeResult = await resultService.GetSessionLapTimesAsync();
+        //results = JsonConvert.DeserializeObject<List<SessionLapTime>>(Convert.ToString(virtualizeResult.Result));
+        //TotalSize = virtualizeResult.TotalSize;
+    }
+}

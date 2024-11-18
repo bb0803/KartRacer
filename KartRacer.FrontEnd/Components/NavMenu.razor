@@ -1,0 +1,20 @@
+﻿
+<MudNavMenu>
+    <MudNavLink Href="/Dashboard" Match="NavLinkMatch.All">Dashboard</MudNavLink>
+    <MudNavGroup Title="Kart Shop" Expanded="true">
+        <MudNavLink Href="/kartshop/Karts" Match="NavLinkMatch.Prefix">Karts</MudNavLink>
+        <MudNavLink Href="/kartshop/engines" Match="NavLinkMatch.Prefix">Engines</MudNavLink>
+        <MudNavLink Href="/kartshop/parts" Match="NavLinkMatch.Prefix">Parts</MudNavLink>
+    </MudNavGroup>
+    <MudNavLink Href="/Practice" Match="NavLinkMatch.Prefix">Practice</MudNavLink>
+    <MudNavGroup Title="Events" Expanded="true">
+        <MudNavLink Href="/Events/Enter" Match="NavLinkMatch.Prefix">Enter an Event</MudNavLink>
+        <MudNavLink Href="/Events/Upcoming" Match="NavLinkMatch.Prefix">Upcoming Sessions</MudNavLink>
+    </MudNavGroup>
+    <MudNavLink Href="/Setup" Match="NavLinkMatch.Prefix">Setup</MudNavLink>
+    <MudNavLink Href="/EventResults" Match="NavLinkMatch.Prefix">Results</MudNavLink>
+    <MudNavGroup Title="Charts" Expanded="true">
+        <MudNavLink Href="/customerChart" Match="NavLinkMatch.Prefix">Lap Analysis</MudNavLink>
+        <MudNavLink Href="/invoiceChart" Match="NavLinkMatch.Prefix">Revenue</MudNavLink>
+    </MudNavGroup>
+</MudNavMenu>

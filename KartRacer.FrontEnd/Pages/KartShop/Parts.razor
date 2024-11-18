@@ -1,0 +1,95 @@
+﻿@page "/kartshop/parts"
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Models.Dto
+@using KartRacer.FrontEnd.Services.Driver
+@using KartRacer.FrontEnd.Services.KartShop
+@using Newtonsoft.Json
+@inject IKartShopService kartShopService
+@inject IDriverService driverService
+@inject ISnackbar snackbar
+
+<MudText Typo="Typo.h3" Color="Color.Primary">Parts</MudText>
+
+<MudText Typo="Typo.h6" Color="Color.Primary">Your Parts</MudText>
+
+<MudDataGrid T="CurrentPartDto" Items="@yourParts" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="p => p.Name" Title="Part" />
+        <PropertyColumn Property="p => p.PartType" Title="Part Type" />
+        <PropertyColumn Property="p => p.Status" Title="Status" />
+        <PropertyColumn Property="p => p.Value" Title="Value" />
+        @* <PropertyColumn Property="f => f.SetupDetails" Title="Details" /> *@
+        @*< TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => SetAsFavourite(context.Item.SetupId)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Set as Current</MudButton>
+            </CellTemplate>
+        </TemplateColumn> *@
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@yourPartsMessage</MudText>
+<br /> <br />
+<MudText Typo="Typo.h6" Color="Color.Primary">Available Parts</MudText>
+<MudDataGrid T="AvailablePartDto" Items="@availableParts" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="p => p.Name" Title="Part" />
+        <PropertyColumn Property="p => p.PartType" Title="Part Type" />
+        <PropertyColumn Property="p => p.Cost" Title="Value" />
+        @* <PropertyColumn Property="f => f.SetupDetails" Title="Details" /> *@
+        <TemplateColumn CellClass="d-flex justify-end">
+        <CellTemplate>
+        <MudButton @onclick="() => purchasePart(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Purchase</MudButton>
+        </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+
+
+
+@code {
+    private string yourPartsMessage = String.Empty;
+    List<CurrentPartDto> yourParts = new List<CurrentPartDto>();
+    List<AvailablePartDto> availableParts = new List<AvailablePartDto>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await loadCurrentParts();
+        var responseAvailable = await kartShopService.GetAvailablePartsAsync();
+        if (responseAvailable.IsSuccess)
+        {
+            availableParts = JsonConvert.DeserializeObject<List<AvailablePartDto>>(Convert.ToString(responseAvailable.Result));
+        }
+    }
+
+    private async void purchasePart(int Id)
+    {
+        var response = await kartShopService.PurchasePartAsync(Id);
+        if (response.IsSuccess)
+        {
+            snackbar.Add("The part was successfully purchased.", Severity.Info);
+        }
+        else
+        {
+            snackbar.Add($"The part purchase was not successful, please try again. {response.Message}", Severity.Error);
+        }
+        await loadCurrentParts();
+    }
+
+    private async Task loadCurrentParts()
+    {
+        var responseCurrent = await driverService.GetCurrentPartsAsync();
+        if (responseCurrent.IsSuccess)
+        {
+            yourParts = JsonConvert.DeserializeObject<List<CurrentPartDto>>(Convert.ToString(responseCurrent.Result));
+        }
+        if (yourParts.Count == 0)
+        {
+            yourPartsMessage = "You dont have any parts, you need to purchase one of those listed below..";
+        }
+        else
+        {
+            yourPartsMessage = "";
+        }
+        StateHasChanged();
+    }
+}

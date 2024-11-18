@@ -1,0 +1,100 @@
+﻿@page "/kartshop/karts"
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Driver
+@using KartRacer.FrontEnd.Services.KartShop
+@using Newtonsoft.Json
+@inject IDriverService driverService
+@inject IKartShopService kartShopService
+@inject ISnackbar snackbar;
+<h3>Karts</h3>
+<br />
+<h4>Your Current Karts</h4>
+<MudDataGrid T="Chassis" Items="@currentKarts" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="c => c.ChassisBrand" Title="Brand" Editable="false" />
+        <PropertyColumn Property="c => c.ChassisName" Title="Name" Editable="false" />
+        <PropertyColumn Property="c => c.Aero" />
+        <PropertyColumn Property="c => c.Brakes" />
+        <PropertyColumn Property="c => c.Steering" />
+        <PropertyColumn Property="c => c.Status" />
+        @* <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => purchaseKart(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Purchase</MudButton>
+            </CellTemplate>
+        </TemplateColumn> *@
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@currentKartsMessage</MudText>
+<br /><br />
+<h4>Available Karts</h4>
+
+<MudDataGrid T="Chassis" Items="@availableKarts" ReadOnly="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="c => c.ChassisBrand" Title="Nr" Editable="false" />
+        <PropertyColumn Property="c => c.Aero" />
+        <PropertyColumn Property="c => c.Brakes" />
+        <PropertyColumn Property="c => c.Steering" />
+        <PropertyColumn Property="c => c.Cost" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => purchaseKart(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Purchase</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+@availableKartsMessage
+
+@code {
+    List<Chassis> currentKarts = new List<Chassis>();
+    List<Chassis> availableKarts = new List<Chassis>();
+    private string availableKartsMessage = String.Empty;
+    private string currentKartsMessage = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await loadCurrentKarts();
+        var responseAvailable = await kartShopService.GetAvailableChassisAsync();
+        if (responseAvailable.IsSuccess)
+        {
+            availableKarts = JsonConvert.DeserializeObject<List<Chassis>>(Convert.ToString(responseAvailable.Result));
+        }
+        if (availableKarts.Count == 0)
+        {
+
+            availableKartsMessage = "There are no karts available.";
+        }
+    }
+
+    private async void purchaseKart(int Id)
+    {
+        var response = await kartShopService.PurchaseChassisAsync(Id);
+        if (response.IsSuccess)
+        {
+            snackbar.Add("The kart was successfully purchased. You may need to but an engine.", Severity.Info);
+        } else
+        {
+            snackbar.Add("The kart purchase was not successful, please try again.", Severity.Error);
+        }
+        await loadCurrentKarts();
+    }
+
+    private async Task loadCurrentKarts()
+    {
+        var responseCurrent = await driverService.GetCurrentChassisAsync();
+        if (responseCurrent.IsSuccess)
+        {
+            currentKarts = JsonConvert.DeserializeObject<List<Chassis>>(Convert.ToString(responseCurrent.Result));
+        }
+        if (currentKarts.Count == 0)
+        {
+            currentKartsMessage = "You dont have any karts, you need to purchase one of those listed below..";
+        } else
+        {
+            currentKartsMessage = "";
+        }
+        StateHasChanged();
+
+    }
+
+}

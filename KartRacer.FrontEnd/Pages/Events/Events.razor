@@ -1,0 +1,134 @@
+﻿@page "/Events/Enter"
+
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Models.Dto
+@using KartRacer.FrontEnd.Services.Driver
+@using KartRacer.FrontEnd.Services.Event
+@using KartRacer.FrontEnd.Services.User
+@using Newtonsoft.Json
+@inject NavigationManager navman
+@inject IUserService userService
+@inject IDriverService driverService
+@inject IEventService eventService
+@inject ISnackbar snackbar
+
+<h3>Events</h3>
+<MudText Typo="Typo.h3" Color="Color.Secondary">Events</MudText>
+<h5>Entries</h5>
+<MudDataGrid T="EntriesDto" Items="@entries" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="e => e.ClubName" Title="Brand" />
+        <PropertyColumn Property="e => e.StartDate" Title="Start Date" />
+        <PropertyColumn Property="e => e.Countdown" />
+        @* <TemplateColumn CellClass="d-flex justify-end">
+        <CellTemplate>
+        <MudButton @onclick="() => purchaseKart(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Purchase</MudButton>
+        </CellTemplate>
+        </TemplateColumn> *@
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@entriesMessage</MudText>
+<br />
+<br />
+<br />
+<h5>Available Events</h5>
+<MudDataGrid T="Event" Items="@availableEvents" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="e => e.Name" Title="Name" />
+        <PropertyColumn Property="e => e.StartDate" Title="Start Date" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => enterEvent(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Enter</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@availableEventsMessage</MudText>
+
+@code {
+    UserSetting usr;
+    private string entriesMessage = String.Empty;
+    private string availableEventsMessage = String.Empty;
+    List<EntriesDto> entries = new List<EntriesDto>();
+    List<Event> availableEvents = new List<Event>();
+
+    protected override async void OnInitialized()
+    {
+        //No Driver Set
+        var responseUser = await userService.GetUserSettingAsync();
+        if (responseUser.IsSuccess)
+        {
+            usr = JsonConvert.DeserializeObject<UserSetting>(Convert.ToString(responseUser.Result));
+            if (String.IsNullOrEmpty(usr.DriverId.ToString()))
+            {
+                navman.NavigateTo("createDriver");
+            }
+        }
+        var responseDriver = await driverService.GetDriverAsync();
+        if (!responseDriver.IsSuccess) { snackbar.Add("An error occurred.", Severity.Error); }
+
+        Driver drv = JsonConvert.DeserializeObject<Driver>(Convert.ToString(responseDriver.Result));
+        //No Kart Set
+        if (String.IsNullOrEmpty(drv.CurrentKartId.ToString()))
+        {
+            navman.NavigateTo("kartshop/karts");
+        }
+
+        //No Engine Set
+        if (String.IsNullOrEmpty(drv.CurrentEngineId.ToString()))
+        {
+            snackbar.Add("You do not have any engines. You need to purchase one before you can enter an event.", Severity.Info);
+            navman.NavigateTo("kartshop/engines");
+        }
+
+        //Entries
+        await loadCurrentEntries();
+        //Available Events
+        var responseAvailableEvents = await eventService.GetAvailableEventsAsync();
+        if (responseAvailableEvents.IsSuccess)
+        {
+            availableEvents = JsonConvert.DeserializeObject<List<Event>>(Convert.ToString(responseAvailableEvents.Result));
+        }
+        if (availableEvents.Count == 0)
+        {
+
+            availableEventsMessage = "There are no upcoming available events that you are eligible for.";
+        }
+        StateHasChanged();
+    }
+    private async void enterEvent(int Id)
+    {
+        var response = await eventService.CreateEntryAsync(Id);
+        if (response.IsSuccess)
+        {
+            snackbar.Add("Your entry was successfuly created.", Severity.Info);
+        }
+        else
+        {
+            snackbar.Add("The entry was not successful, please try again.", Severity.Error);
+        }
+        await loadCurrentEntries();
+    }
+
+    private async Task loadCurrentEntries()
+    {
+        var responseEntries = await eventService.GetEntriesAsync();
+        if (responseEntries.IsSuccess)
+        {
+            entries = JsonConvert.DeserializeObject<List<EntriesDto>>(Convert.ToString(responseEntries.Result));
+        }
+        if (entries.Count == 0)
+        {
+
+            entriesMessage = "You currently have no upcoming entries.";
+        }
+        else
+        {
+            entriesMessage = "";
+        }
+        StateHasChanged();
+
+    }
+}

@@ -1,0 +1,46 @@
+﻿@page "/account/login"
+@using KartRacer.FrontEnd.Models.User
+@using KartRacer.FrontEnd.Services.Auth
+@inject IAuthService authService
+@inject NavigationManager navManager
+
+<MudGrid>
+    <MudItem xs="12" sm="12">
+        <MudPaper Class="pa-4">
+            <MudForm @ref="form" @bind-IsValid="@success">
+                <MudTextField T="string" Label="Username" Required="true" RequiredError="User name is required!" @ref="username" />
+                <MudTextField T="string" Label="Password" HelperText="Choose a strong password" @ref="pw"
+                              InputType="InputType.Password"
+                              RequiredError="Password is required!" />
+            </MudForm>
+        </MudPaper>
+        <MudPaper Class="pa-4 mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" DropShadow="false" OnClick="@(()=>HandleLogin())">Login</MudButton>
+
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+@code {
+    bool success;
+    string[] errors = { };
+    MudTextField<string> pw;
+    MudTextField<string> username;
+
+    MudForm form;
+
+    LoginRequestDto LoginModel = new LoginRequestDto();
+    string message = string.Empty;
+    public async Task HandleLogin()
+    {
+        LoginModel.UserName = username.Value.ToString();
+        LoginModel.Password = pw.Value.ToString();
+        var response = await authService.LoginAsync(LoginModel);
+
+        if (response.IsSuccess)
+        {
+            navManager.NavigateTo("/Events");
+        }
+
+        message = response.Message;
+    }
+}

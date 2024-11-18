@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.11.35312.102
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KartRacer.FrontEnd", "KartRacer.FrontEnd\KartRacer.FrontEnd.csproj", "{C244E2C2-803A-4530-BC8D-789794A28B2B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "KartRacer.API", "KartRacer.API\KartRacer.API.csproj", "{3EEE83E4-11FF-401D-A7B3-40C0D8C5744F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C244E2C2-803A-4530-BC8D-789794A28B2B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C244E2C2-803A-4530-BC8D-789794A28B2B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C244E2C2-803A-4530-BC8D-789794A28B2B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C244E2C2-803A-4530-BC8D-789794A28B2B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3EEE83E4-11FF-401D-A7B3-40C0D8C5744F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EEE83E4-11FF-401D-A7B3-40C0D8C5744F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EEE83E4-11FF-401D-A7B3-40C0D8C5744F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EEE83E4-11FF-401D-A7B3-40C0D8C5744F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5D2775D7-3AC9-4EDC-AF25-100B4B38E14F}
+	EndGlobalSection
+EndGlobal

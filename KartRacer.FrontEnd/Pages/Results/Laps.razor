@@ -1,0 +1,87 @@
+﻿@page "/results/details/{id:int}"
+@inject IResultService resultService
+@inject NavigationManager navManager
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Results
+@using Newtonsoft.Json
+
+<h3>SessionLapTime Details</h3>
+
+@if (@message != "" && message != null) {
+<div class="alert alert-danger">
+    <h4>@message</h4>
+</div>
+}
+
+<EditForm Model="results" OnValidSubmit="SaveSessionLapTime">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <br />
+    <div class="form-group">
+        <label for="id">Id</label>
+        <InputNumber readonly @bind-Value="results.Id"  class="form-control" id="id" />
+        <ValidationMessage For="@(() => results.Id)" />
+    </div>
+    <br />
+    <div class="form-group row">
+        <div class="col-4">
+            <label for="name">First Name</label>
+            <InputNumber @bind-Value="results.DriverId" class="form-control" id="name" />
+            <ValidationMessage For="@(() => results.DriverId)" />
+        </div>
+        <div class="col-4">
+            <label for="middleName">Middle Name</label>
+            <InputNumber @bind-Value="results.SessionId" class="form-control" id="middleName" />
+            <ValidationMessage For="@(() => results.SessionId)" />
+        </div>
+    </div>
+    <br />
+    
+    <button class="btn btn-primary" type="submit">
+        <span class="oi oi-save"></span>
+        Save Job
+    </button>
+
+    <button @onclick="BackToList" class="btn btn-outline-secondary">
+        <span class="oi oi-media-skip-backward"></span>
+        Back To List
+    </button>
+</EditForm>
+
+@code {
+    [Parameter]
+    public int id { get; set; }
+
+    private SessionLapTime results = new SessionLapTime();
+
+    string message = string.Empty;
+
+    protected async override Task OnInitializedAsync()
+    {
+        // var response = await resultService.GetSessionLapTimesAsync();
+        // if (response.IsSuccess)
+        // {
+        //     results = JsonConvert.DeserializeObject<SessionLapTime>(Convert.ToString(response.Result));
+        //     message = "";
+        // }
+        // message = response.Message;
+        //var resp = await sharedService.GetLookupValues("JobType");
+        //lookupValues = resp.Data;
+    }
+
+    private async Task SaveSessionLapTime()
+    {
+        // var response = await resultService.GetSessionLapTimesAsync();
+        // if (response.IsSuccess)
+        // {
+        //     BackToList();
+        // }
+        // message = response.Message;
+    }
+
+    private void BackToList()
+    {
+        navManager.NavigateTo("/racesummary/");
+    }
+
+}

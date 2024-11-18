@@ -1,0 +1,78 @@
+﻿@page "/setup"
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.Dto
+@using KartRacer.FrontEnd.Services.Setup
+@using Newtonsoft.Json
+@inject ISetupService setupService
+@inject ISnackbar snackbar
+
+<PageTitle>Kart Setup</PageTitle>
+<MudText Typo="Typo.h4" Color="Color.Primary">Kart Setup</MudText>
+
+<MudText Typo="Typo.h6" Color="Color.Primary">SetupFavourites</MudText>
+
+<MudDataGrid T="SetupFavouriteDto" Items="@setupFavourites" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="f => f.SetupName" Title="Name" />
+        @* <PropertyColumn Property="f => f.SetupDetails" Title="Details" /> *@
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => SetAsFavourite(context.Item.SetupId)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Set as Current</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@setupFavouritesMessage</MudText>
+
+<br/>
+<MudText Typo="Typo.h6" Color="Color.Primary">Current Setup Details</MudText>
+@if (setup.Count > 0 )
+{
+    <SetupForm setup="setup[0]" ShowSaveButton="true" ShowSetAsFavouriteButton="true" />
+}
+
+@code {
+    private string setupFavouritesMessage = String.Empty;
+    List<Models.Data.Setup> setup = new List<Models.Data.Setup>() { };
+    List<SetupFavouriteDto> setupFavourites = new List<SetupFavouriteDto>();
+
+    protected override async void OnInitialized()
+    {
+        //Setup Favourites
+        var response = await setupService.GetSetupFavoritesAsync();
+        if (response.IsSuccess)
+        {
+            setupFavourites = JsonConvert.DeserializeObject<List<SetupFavouriteDto>>(Convert.ToString(response.Result));
+        }
+        if (setupFavourites.Count == 0)
+        {
+            setupFavouritesMessage = "You have not created any favourite setups yet.";
+        } else
+        {
+            setupFavouritesMessage = "";
+        }
+        var responseSetup = await setupService.GetSetupAsync();
+        if (responseSetup.IsSuccess)
+        {
+            setup = JsonConvert.DeserializeObject<List<Models.Data.Setup>>(Convert.ToString(responseSetup.Result));
+        }
+
+        StateHasChanged();
+    }
+
+
+    private async void SetAsFavourite(int Id)
+    {
+        var response = await setupService.LoadSetupFavouriteAsync(Id);
+        if (response.IsSuccess)
+        {
+            snackbar.Add("Your setup was loaded.", Severity.Info);
+        }
+        else
+        {
+            snackbar.Add("Your setup ws not loaded, please try again.", Severity.Error);
+        }
+    }
+
+}

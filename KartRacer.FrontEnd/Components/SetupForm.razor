@@ -1,0 +1,97 @@
+﻿@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Setup
+@using Newtonsoft.Json
+@inject ISetupService setupService
+@inject ISnackbar snackbar
+@inject IDialogService dialog
+
+@if (IsFavourite)
+{
+    <MudText Typo="Typo.body2" Color="Color.Primary">This is a favourite</MudText>
+}
+
+<MudForm Model="setup" @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+    <MudNumericField T="Byte" @bind-Value="setup.FrontWidth" Max="25" Min="5" Step="5" Label="Front Width" />
+    <MudNumericField T="short" @bind-Value="setup.Camber" Max="8" Min="-8" Step="1" Label="Camber" @ref="camber" />
+    <MudNumericField T="short" @bind-Value="setup.Caster" Max="1" Min="-1" Step="1" Label="Caster" @ref="caster" />
+    <MudNumericField T="short" @bind-Value="setup.Toe" Max="6" Min="-6" Step="1" Label="Toe" @ref="toe" />
+    <MudNumericField T="short" @bind-Value="setup.RearWidth" Max="12" Min="10" Step="1" Label="Rear Width" @ref="rearWidth" />
+    <MudNumericField T="Byte" @bind-Value="setup.RearAxle" Max="85" Min="60" Step="1" Label="Rear Axle" @ref="rearAxle" />
+    <MudNumericField T="Byte" @bind-Value="setup.FrontSprocket" Max="12" Min="10" Step="1" Label="Front Sprocket" @ref="frontSprocket" />
+    <MudNumericField T="Byte" @bind-Value="setup.RearSprocket" Max="85" Min="60" Step="1" Label="Rear Sprocket" @ref="rearSprocket" />
+    <MudNumericField T="Byte" @bind-Value="setup.TyrePressure" Max="25" Min="6" Step="1" Label="Tyre Pressure" @ref="tyrePressure" />
+    <br />
+    @if (ShowSaveButton)
+    {
+        <div class="align-center justify-space-between">
+            <MudButton @onclick="OpenDialogAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Save</MudButton>
+            <MudButton @onclick="SetAsFavouriteAsync" Variant="Variant.Filled" Color="Color.Secondary" Disabled="@(!success)" Class="ml-auto">SetAsFavourite</MudButton>
+        </div>
+    }
+</MudForm>
+
+@code {
+    [Parameter]
+    public Setup setup { get; set; }
+    // [Parameter]
+    // public EventCallback<ChangeTyreDto> OnTyreSelected { get; set; }
+    [Parameter]
+    public Boolean ShowSaveButton { get; set; } = true;
+    [Parameter]
+    public Boolean ShowSetAsFavouriteButton { get; set; } = true;
+    [Parameter]
+    public Boolean IsFavourite { get; set; } = false;
+
+    bool success;
+    string[] errors = { };
+    MudForm form;
+    MudNumericField<Byte> frontWidth;
+    MudNumericField<short> camber;
+    MudNumericField<short> caster;
+    MudNumericField<short> toe;
+    MudNumericField<short> rearWidth;
+    MudNumericField<Byte> rearAxle;
+    MudNumericField<Byte> frontSprocket;
+    MudNumericField<Byte> rearSprocket;
+    MudNumericField<Byte> tyrePressure;
+
+    private async Task SaveSetupAsync()
+    {
+        ResponseDto response = await setupService.SaveSetupAsync(setup);
+        if (response.IsSuccess)
+        {
+            var setup = JsonConvert.DeserializeObject<Driver>(Convert.ToString(response.Result));
+            snackbar.Add(response.Message, Severity.Info);
+        }
+        else
+        {
+            snackbar.Add(response.Message, Severity.Error);
+        }
+    }
+    private async Task SetAsFavouriteAsync()
+    {
+        ResponseDto response = await setupService.SaveSetupAsync(setup);
+        if (response.IsSuccess)
+        {
+            var setup = JsonConvert.DeserializeObject<Driver>(Convert.ToString(response.Result));
+            snackbar.Add(response.Message, Severity.Info);
+        }
+        else
+        {
+            snackbar.Add(response.Message, Severity.Error);
+        }
+    }
+
+    private Task OpenDialogAsync()
+    {
+        var parameters = new DialogParameters<Dialog>
+        {
+            { x => x.DialogContent, "Do you really want to delete these records? This process cannot be undone." },
+            { x => x.DialogTitle, "Delete" }
+        };
+        var options = new DialogOptions { CloseOnEscapeKey = true,  };
+
+        return dialog.ShowAsync<Dialog>("Simple Dialog", parameters, options);
+    }
+}

@@ -1,0 +1,62 @@
+﻿@page "/"
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.User
+@using Microsoft.AspNetCore.Components.Authorization
+@using Newtonsoft.Json
+@inject IUserService userService
+@inject IDialogService dialogService
+
+<PageTitle>Welcome to Kart Racer!</PageTitle>
+
+<h3>Welcome to Kart Racer</h3>
+<br />
+<p>Kart Racer is a go kart strategy simulation game where you et up kart and see how you go against everyone else.</p>
+<p>Sessions are run at times throughout the week and you can see who enters what event.</p>
+<br />
+<AuthorizeView>
+    <Authorized>
+        @if (userSetting != null)
+        {
+            @if (userSetting.DriverId != null)
+            {
+                <p>Click on an option on the left to play.</p>
+                <p>There is 20 hours to your next scheduled session.</p>
+            }
+            else
+            {
+                <p>Click here to enter driver details.</p>
+                <MudButton Variant="Variant.Filled" Href="driver/create" Color="Color.Primary">Create Driver</MudButton>
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <MudToolBar Class="gap-4">
+            <MudButton Variant="Variant.Filled" Href="account/register" Color="Color.Primary">Register</MudButton>
+            <MudSpacer />
+            <MudButton Variant="Variant.Filled" Href="account/login" Color="Color.Secondary">Login</MudButton>
+        </MudToolBar>
+    </NotAuthorized>
+</AuthorizeView>
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? authenticationState { get; set; }
+    UserSetting userSetting;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (authenticationState is not null)
+        {
+            var authState = await authenticationState;
+            var user = authState?.User;
+
+            if (user?.Identity is not null && user.Identity.IsAuthenticated)
+            {
+                var response = await userService.GetUserSettingAsync();
+                userSetting = JsonConvert.DeserializeObject<UserSetting>(Convert.ToString(response.Result));
+            }
+        }
+    }
+
+    
+}

@@ -1,0 +1,55 @@
+﻿@page "/driver/create"
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Driver
+@using KartRacer.FrontEnd.Services.User
+@using Newtonsoft.Json
+@inject NavigationManager navman
+@inject IDialogService dialogService
+@inject ISnackbar snackBar
+@inject IDriverService driverService
+@inject IUserService userService
+
+
+<h3>Create your driver</h3>
+<MudGrid >
+    <MudItem xs="12" sm="12">
+        <MudPaper Class="pa-4">
+            <MudForm @ref="form" @bind-IsValid="@success" @bind-Errors="@errors">
+                <MudTextField T="string" Immediate="true"  Label="Choose the name of your driver" Required="true" RequiredError="Driver name is required!" @ref="driverName" />
+                <br />
+                <div class="align-center justify-space-between">
+                    <MudButton @onclick="CreateDriverAsync" Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!success)" Class="ml-auto">Create Driver</MudButton>
+                </div>
+            </MudForm>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+@code {
+    bool success;
+    string[] errors = { };
+    MudForm form;
+    MudTextField<string> driverName;
+
+    private class _Driver
+    {
+        public int id { get; set; }
+    }
+
+
+    private async Task CreateDriverAsync()
+    {
+        ResponseDto response = await driverService.CreateDriverAsync(driverName.Value.ToString());
+        if (response.IsSuccess)
+        {
+            var drv = JsonConvert.DeserializeObject<Driver>(Convert.ToString(response.Result));
+            ResponseDto responseUser = await userService.ChangeDriverIdAsync(drv.Id);
+            snackBar.Add(response.Message, Severity.Info);
+            navman.NavigateTo("/kartshop/karts");
+        } else
+        {
+            snackBar.Add(response.Message, Severity.Error);
+        }
+    }
+}

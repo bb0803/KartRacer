@@ -1,0 +1,100 @@
+﻿@page "/kartshop/engines"
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Driver
+@using KartRacer.FrontEnd.Services.KartShop
+@using Newtonsoft.Json
+@inject IDriverService driverService
+@inject IKartShopService kartShopService
+@inject ISnackbar snackbar;
+<h3>Engines</h3>
+<br />
+<h4>Your Current Engines</h4>
+<MudDataGrid T="Engine" Items="@currentEngines" ReadOnly="false" Dense="true">
+    <Columns>
+        <PropertyColumn Property="e => e.EngineBrand" Title="Brand" />
+        <PropertyColumn Property="e => e.EngineName" Title="Name"  />
+        <PropertyColumn Property="e => e.Rating" />
+        <PropertyColumn Property="e => e.Power" />
+        <PropertyColumn Property="e => e.Status" />
+        @* <TemplateColumn CellClass="d-flex justify-end">
+        <CellTemplate>
+        <MudButton @onclick="() => purchaseKart(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Purchase</MudButton>
+        </CellTemplate>
+        </TemplateColumn> *@
+    </Columns>
+</MudDataGrid>
+<br />
+<MudText Typo="Typo.subtitle1" Color="Color.Primary">@currentEnginesMessage</MudText>
+<br />
+<br />
+<h4>Available Karts</h4>
+
+<MudDataGrid T="Engine" Items="@availableEngines" ReadOnly="true" Dense="true">
+    <Columns>
+        <PropertyColumn Property="e => e.EngineBrand" Title="Nr" Editable="false" />
+        <PropertyColumn Property="e => e.Rating" />
+        <PropertyColumn Property="e => e.Power" />
+        <PropertyColumn Property="e => e.Cost" />
+        <TemplateColumn CellClass="d-flex justify-end">
+            <CellTemplate>
+                <MudButton @onclick="() => purchaseEngine(context.Item.Id)" Size="@Size.Small" Variant="@Variant.Filled" Color="@Color.Primary">Purchase</MudButton>
+            </CellTemplate>
+        </TemplateColumn>
+    </Columns>
+</MudDataGrid>
+@availableEnginesMessage
+
+@code {
+    List<Engine> currentEngines = new List<Engine>();
+    List<Engine> availableEngines = new List<Engine>();
+    private string availableEnginesMessage = String.Empty;
+    private string currentEnginesMessage = String.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await loadCurrentEngines();
+        var responseAvailable = await kartShopService.GetAvailableEnginesAsync();
+        if (responseAvailable.IsSuccess)
+        {
+            availableEngines = JsonConvert.DeserializeObject<List<Engine>>(Convert.ToString(responseAvailable.Result));
+        }
+        if (availableEngines.Count == 0)
+        {
+
+            availableEnginesMessage = "There are no engines available.";
+        }
+    }
+
+    private async void purchaseEngine(int Id)
+    {
+        var response = await kartShopService.PurchaseEngineAsync(Id);
+        if (response.IsSuccess)
+        {
+            snackbar.Add("The engine was successfully purchased.", Severity.Info);
+        }
+        else
+        {
+            snackbar.Add("The engine purchase was not successful, please try again.", Severity.Error);
+        }
+        await loadCurrentEngines();
+    }
+
+    private async Task loadCurrentEngines()
+    {
+        var responseCurrent = await driverService.GetCurrentEnginesAsync();
+        if (responseCurrent.IsSuccess)
+        {
+            currentEngines = JsonConvert.DeserializeObject<List<Engine>>(Convert.ToString(responseCurrent.Result));
+        }
+        if (currentEngines.Count == 0)
+        {
+            currentEnginesMessage = "You dont have any engines, you need to purchase one of those listed below..";
+        } else
+        {
+            currentEnginesMessage = "";
+        }
+        StateHasChanged();
+
+    }
+
+}

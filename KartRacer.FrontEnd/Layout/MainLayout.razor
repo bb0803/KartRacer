@@ -1,0 +1,54 @@
+﻿@inherits LayoutComponentBase
+@using KartRacer.FrontEnd.Components
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.User
+@using Microsoft.AspNetCore.Components.Authorization
+@using Newtonsoft.Json
+@inject IUserService userService
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+<MudLayout>
+    <MudAppBar Color="Color.Primary">
+        <MudIconButton Icon="@Icons.Material.Filled.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@((e) => DrawerToggle())" />
+        Kart Racer
+        <MudSpacer />
+        @if (result != null) {
+            <span>Hi @result.NickName</span>
+        }
+        <MudSpacer />
+        <span>Event Info: 22-Mar</span>
+    </MudAppBar>
+    
+    <MudMainContent Class="ps-2">
+        <br />
+       <AuthorizeView>
+           <Authorized>
+                <MudDrawer @bind-Open="@_drawerOpen">
+                    <NavMenu />
+                </MudDrawer>
+           </Authorized>
+        </AuthorizeView>
+        @Body
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    bool _drawerOpen = false;
+    UserSetting result;
+    void DrawerToggle()
+    {
+        _drawerOpen = !_drawerOpen;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var response = await userService.GetUserSettingAsync();
+        if (response.IsSuccess)
+        {
+            result = JsonConvert.DeserializeObject<UserSetting>(Convert.ToString(response.Result));
+            _drawerOpen = (result.DriverId != null);
+        }
+    }
+}

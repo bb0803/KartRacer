@@ -1,0 +1,26 @@
+﻿<MudDialog>
+    <TitleContent>
+        @DialogTitle
+    </TitleContent>
+    <DialogContent>
+        <SetupForm setup="dialogDataset" ShowSaveButton="true" ShowSetAsFavouriteButton="true" />
+    </DialogContent>
+    <DialogActions>
+        <MudButton OnClick="Cancel">Cancel</MudButton>
+        <MudButton Color="Color.Primary" OnClick="Submit">Ok</MudButton>
+    </DialogActions>
+</MudDialog>
+@code {
+    [CascadingParameter]
+    private MudDialogInstance MudDialog { get; set; } = new MudDialogInstance() { };
+    [Parameter]
+    public string DialogTitle { get; set; } = String.Empty;
+    [Parameter]
+    public string DialogContent { get; set; } = String.Empty;
+    [Parameter]
+    public Models.Data.Setup dialogDataset { get; set; } = new Models.Data.Setup();
+
+    private void Submit() => MudDialog.Close(DialogResult.Ok(true));
+
+    private void Cancel() => MudDialog.Cancel();
+}

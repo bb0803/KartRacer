@@ -1,0 +1,88 @@
+﻿@page "/session/"
+@inject IResultService resultService
+@inject IJSRuntime js
+@inject NavigationManager navman
+@using KartRacer.FrontEnd.Models.API
+@using KartRacer.FrontEnd.Models.Data
+@using KartRacer.FrontEnd.Services.Results
+@using Newtonsoft.Json
+@using KartRacer.FrontEnd.Web.Models.Dto
+
+<PageTitle>KartRacer - @title</PageTitle>
+<h3>@title</h3>
+
+@if(response.IsSuccess == false)
+{
+    <div class="alert alert-danger">
+        <h4>@response.Message</h4>
+    </div>
+}
+else
+{
+    @if(results == null && session == null)
+    {
+        <div class="alert alert-info">
+            <h4>Loading Data...</h4>
+        </div>
+    }
+    
+    @if (session != null)
+    {
+        
+    }
+    @if (results != null)
+    {
+        <SessionResultsTable dataset="results" />
+        <br />
+    }
+}
+
+
+@code {
+    public List<ResultsDto> results;
+    public Session session;
+    private string title;
+    private string sessionInterval;
+    private ResponseDto response = new ResponseDto { IsSuccess = true };
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSession();
+        title = session.SessionType;
+        if (session.SessionType == "Race") { sessionInterval = "Lap"; } else { sessionInterval = "Minute"; }
+        await LoadSessionLapTimes();        
+    }
+
+    private async Task LoadSessionLapTimes()
+    {
+        // response = await resultService.GetSessionLapTimesAsync();
+        // if (response.IsSuccess)
+        // {
+        //     results = JsonConvert.DeserializeObject<List<ResultsDto>>(Convert.ToString(response.Result));
+        // }
+    }
+
+    private async Task LoadSession()
+    {
+        //Session Details
+        // response = await sessionService.GetSessionDetailsAsync();
+        // if (response.IsSuccess)
+        // {
+        //     session = JsonConvert.DeserializeObject<Session>(Convert.ToString(response.Result));
+        // }
+
+    }
+    private async Task DoLaps(Byte laps) {
+        //await sessionService.ProcessSessionAsync(laps);
+        await LoadSession();
+        await LoadSessionLapTimes();
+    }
+
+    private void GoToPits()
+    {
+        navman.NavigateTo("/session/pits");
+    }
+
+
+}

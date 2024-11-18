@@ -1,0 +1,31 @@
+﻿@page "/account/logout"
+@inject IAuthService authService
+@inject NavigationManager navManager
+@using KartRacer.FrontEnd.Models.User
+@using KartRacer.FrontEnd.Services.Auth
+
+<h3>Log Out</h3>
+
+<p>
+Are you sure want to log out?
+</p>
+<div>
+    <button id="btnYes" type="submit" class="btn btn-primary" @onclick="@(() => HandleLogout())">Yes</button>
+    <button id="btnNo" class="btn btn-secondary">No</button>
+</div>
+
+@code {
+    LoginRequestDto LoginModel = new LoginRequestDto();
+    string message = string.Empty;
+    public async Task HandleLogout() 
+    {
+        var response = await authService.LogoutAsync();
+        //var response = await authService.LoginAsync(LoginModel);
+        if (response.IsSuccess)
+        {        
+            navManager.NavigateTo("/account/login");
+        }
+        
+        message = response.Message;
+    }
+}
